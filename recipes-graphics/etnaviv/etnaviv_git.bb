@@ -8,7 +8,7 @@ DEPENDS = "virtual/egl virtual/libgles2"
 
 SRC_URI = "git://github.com/laanwj/etna_viv.git;branch=master"
 
-SRCREV = "29b464caed876a7ae2bef568f14898a8180e2535"
+SRCREV = "bc49dec8673fd934145986da436590db0d986b9f"
 
 S = "${WORKDIR}/git"
 
@@ -16,14 +16,17 @@ PR = "r1"
 PV = "git${SRCPV}"
 
 
+PACKAGE_ARCH = "${MACHINE_ARCH}"
+
+
 ETNAVIV_EXTRA_CFLAGS = "-D_POSIX_C_SOURCE=200809 -D_GNU_SOURCE -pthread"
 ETNAVIV_EXTRA_LDFLAGS = "-ldl -lpthread -pthread"
 ETNAVIV_GL_LIBS ?= "-lEGL -lGLESv2"
 ETNAVIV_GL_LDFLAGS ?= "-Xlinker --allow-shlib-undefined"
 
-# TODO: this should be set in BSP specific .bbappend files, and not here
-# remove or comment out this line once at least one BSP specific .bbappend exists
-ETNAVIV_GCABI ?= "dove"
+# GCABI values for additional devices can be set in .bbappend files
+ETNAVIV_GCABI_cubox ?= "dove"
+ETNAVIV_GCABI_mx6 ?= "imx6"
 
 
 PARALLEL_MAKE = ""
@@ -89,21 +92,27 @@ do_install() {
 	install -d "${DESTDIR}/egl"
 	install -d "${DESTDIR}/fb"
 	install -d "${DESTDIR}/gallium"
+	install -d "${DESTDIR}/resources"
 
 	for executable in ${ETNAVIV_EXECUTABLES}
 	do
 		install -m 0755 "${S}/native/${executable}" "${DESTDIR}/${executable}"
 	done
+
 	for static_lib in ${ETNAVIV_STATIC_LIBS}
 	do
 		install -m 0644 "${S}/native/${static_lib}" "${DESTDIR}/${static_lib}"
 	done
+
+	install -m 0644 ${S}/native/resources/*.tga "${DESTDIR}/resources"
+	install -m 0644 ${S}/native/resources/*.dds "${DESTDIR}/resources"
 }
 
 FILES_${PN} = " \
 	${ETNAVIV_DIR}/egl/* \
 	${ETNAVIV_DIR}/fb/* \
 	${ETNAVIV_DIR}/gallium/test \
+	${ETNAVIV_DIR}/resources/* \
 "
 
 FILES_${PN}-staticdev = " \
